@@ -5,6 +5,7 @@ using Microsoft.Identity.Web;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web.Resource;
 using N_Shop.API.Data;
+using N_Shop.API.Services;
 using Scalar.AspNetCore;
 
 namespace N_Shop.API;
@@ -25,6 +26,8 @@ public class Program
 
         builder.Services.AddDbContext<ApplicationDbContext>(optoins => optoins.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+        builder.Services.AddScoped<ICategoryService,CategoryService>();
+        
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.

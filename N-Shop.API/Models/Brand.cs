@@ -1,6 +1,6 @@
 ﻿namespace N_Shop.API.Models;
 
-public class Category
+public class Brand
 {
     public int Id { get; set; }
     public string Name { get; set; }
