@@ -4,60 +4,50 @@ using N_Shop.API.Data;
 using N_Shop.API.DTOs.Requests;
 using N_Shop.API.DTOs.Responses;
 using N_Shop.API.Models;
+using N_Shop.API.Services;
 
 namespace N_Shop.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ProductsController (ApplicationDbContext context): ControllerBase
+public class ProductsController (ProductService productService): ControllerBase
 {
-    private readonly ApplicationDbContext _context=context;
+    private readonly ProductService _productService=productService;
     [HttpGet("")]
     public IActionResult GetAll()
     {
-        var products = _context.Products.ToList();
-        if (!products.Any()) return NotFound();
+        var products = _productService.GetAll();
         return Ok(products.Adapt<IEnumerable<ProductResponse>>());
     }
 
     [HttpGet("{id}")]
     public IActionResult GetById([FromRoute]int id)
     {
-        var product = _context.Products.Find(id);
-        if (product == null) return NotFound();
-        return Ok(product.Adapt<ProductResponse>());
+        var product = _productService.Get(x=>x.Id == id);
+        return product == null? NotFound(): Ok(product.Adapt<ProductResponse>());
     }
 
     [HttpPost("")]
     public IActionResult Create([FromForm] ProductRequest product)
     {
-        var file = product.Image;
-        var productInDb = product.Adapt<Product>();
-        if (file != null && file.Length > 0)
-        {
-            var fileName = Guid.NewGuid().ToString()+Path.GetExtension(file.FileName);
-            var path = Path.Combine(Directory.GetCurrentDirectory(),"Images",fileName);
-            using (var stream = System.IO.File.Create(path))
-            {
-                file.CopyTo(stream);
-            }
-            productInDb.Image=fileName;
-            _context.Products.Add(productInDb);
-            _context.SaveChanges();
-            return CreatedAtAction(nameof(GetById), new { id = productInDb.Id }, productInDb);
-        }
-        return BadRequest();
+        var productInDb = _productService.Add(product);
+        if(productInDb == null)return BadRequest();
+        return CreatedAtAction(nameof(GetById), new { id = productInDb.Id }, productInDb);
     }
 
+    [HttpPut("{id}")]
+    public IActionResult Update([FromRoute] int id, [FromForm] ProductRequest product)
+    {
+        var productInDb = _productService.Edit(id, product.Adapt<Product>());
+        if (!productInDb) return NotFound();
+        return Ok(productInDb);
+    }
+    
     [HttpDelete("{id}")]
     public IActionResult Delete([FromRoute] int id)
     {
-        var product = _context.Products.Find(id);
-        if (product == null) return NotFound();
-        var path = Path.Combine(Directory.GetCurrentDirectory(), "Images", product.Image);
-        if(System.IO.File.Exists(path)) System.IO.File.Delete(path);
-        _context.Products.Remove(product);
-        _context.SaveChanges();
+        var product = _productService.Remove(id);
+        if (!product) return NotFound();
         return NoContent();
     }
 }
