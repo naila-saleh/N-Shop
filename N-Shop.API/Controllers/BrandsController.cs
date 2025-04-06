@@ -31,7 +31,7 @@ public class BrandsController(IBrandService brandService) : ControllerBase
     public IActionResult Create([FromBody] BrandRequest brand)
     {
         var brandToCreate = _brandService.Add(brand.Adapt<Brand>());
-        return CreatedAtAction(nameof(GetById), new { brandToCreate.Id }, brandToCreate);
+        return CreatedAtAction(nameof(GetById), new { brandToCreate.Id }, brandToCreate.Adapt<BrandResponse>());
     }
 
     [HttpPut("{id}")]

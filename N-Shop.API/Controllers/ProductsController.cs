@@ -10,9 +10,9 @@ namespace N_Shop.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ProductsController (ProductService productService): ControllerBase
+public class ProductsController (IProductService productService): ControllerBase
 {
-    private readonly ProductService _productService=productService;
+    private readonly IProductService _productService=productService;
     [HttpGet("")]
     public IActionResult GetAll()
     {
@@ -32,15 +32,14 @@ public class ProductsController (ProductService productService): ControllerBase
     {
         var productInDb = _productService.Add(product);
         if(productInDb == null)return BadRequest();
-        return CreatedAtAction(nameof(GetById), new { id = productInDb.Id }, productInDb);
+        return CreatedAtAction(nameof(GetById), new { id = productInDb.Id }, productInDb.Adapt<ProductResponse>());
     }
 
     [HttpPut("{id}")]
     public IActionResult Update([FromRoute] int id, [FromForm] ProductRequest product)
     {
         var productInDb = _productService.Edit(id, product.Adapt<Product>());
-        if (!productInDb) return NotFound();
-        return Ok(productInDb);
+        return !productInDb? NotFound(): NoContent();
     }
     
     [HttpDelete("{id}")]

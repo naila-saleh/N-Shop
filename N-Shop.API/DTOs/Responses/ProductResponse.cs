@@ -14,4 +14,5 @@ public class ProductResponse
     public decimal? Rating { get; set; }
     public bool Status { get; set; }
     public int CategoryId { get; set; }
+    public int BrandId { get; set; }
 }

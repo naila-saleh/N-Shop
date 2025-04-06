@@ -11,7 +11,7 @@ using N_Shop.API.Data;
 namespace N_Shop.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250402172653_Initial")]
+    [Migration("20250406172725_Initial")]
     partial class Initial
     {
         /// <inheritdoc />

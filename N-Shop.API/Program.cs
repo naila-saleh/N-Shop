@@ -27,6 +27,8 @@ public class Program
         builder.Services.AddDbContext<ApplicationDbContext>(optoins => optoins.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
         builder.Services.AddScoped<ICategoryService,CategoryService>();
+        builder.Services.AddScoped<IBrandService,BrandService>();
+        builder.Services.AddScoped<IProductService,ProductService>();
         
         var app = builder.Build();
 

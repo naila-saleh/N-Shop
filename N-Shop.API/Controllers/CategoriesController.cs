@@ -35,15 +35,14 @@ public class CategoriesController(ICategoryService categoryService) : Controller
     {
         var categoryInDb = categoryService.Add(category.Adapt<Category>());
         //return Created($"{Request.Scheme}://{Request.Host}/api/Categories/{category.Id}",category);
-        return CreatedAtAction(nameof(GetById), new { categoryInDb.Id }, categoryInDb);
+        return CreatedAtAction(nameof(GetById), new { categoryInDb.Id }, categoryInDb.Adapt<CategoryResponse>());
     }
 
     [HttpPut("{id}")]
     public IActionResult Update([FromRoute]int id,[FromBody] CategoryRequest category)
     {
         var categoryToUpdate = categoryService.Edit(id,category.Adapt<Category>());
-        if (!categoryToUpdate) return NotFound();
-        return NoContent();
+        return !categoryToUpdate? NotFound(): NoContent();
     }
 
     [HttpDelete("{id}")]
