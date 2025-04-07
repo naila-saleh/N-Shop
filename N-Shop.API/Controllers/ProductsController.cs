@@ -14,9 +14,9 @@ public class ProductsController (IProductService productService): ControllerBase
 {
     private readonly IProductService _productService=productService;
     [HttpGet("")]
-    public IActionResult GetAll()
+    public IActionResult GetAll([FromQuery] string? query,[FromQuery] int page=1,[FromQuery] int limit=10)
     {
-        var products = _productService.GetAll();
+        var products = _productService.GetAll(query,page,limit);
         return Ok(products.Adapt<IEnumerable<ProductResponse>>());
     }
 
@@ -36,9 +36,9 @@ public class ProductsController (IProductService productService): ControllerBase
     }
 
     [HttpPut("{id}")]
-    public IActionResult Update([FromRoute] int id, [FromForm] ProductRequest product)
+    public IActionResult Update([FromRoute] int id, [FromForm] ProductUpdateRequest product)
     {
-        var productInDb = _productService.Edit(id, product.Adapt<Product>());
+        var productInDb = _productService.Edit(id, product);
         return !productInDb? NotFound(): NoContent();
     }
     
