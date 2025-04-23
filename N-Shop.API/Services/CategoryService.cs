@@ -14,39 +14,48 @@ public class CategoryService:ICategoryService
         _context = context;
     }
     
-    public IEnumerable<Category> GetAll()
+    public IEnumerable<Category> GetAllAsync()
     {
         return _context.Categories.ToList();
     }
 
-    public Category? Get(Expression<Func<Category, bool>> expression)
+    public Category? GetAsync(Expression<Func<Category, bool>> expression)
     {
         return _context.Categories.FirstOrDefault(expression);
     }
 
-    public Category Add(Category category)
+    public async Task<Category> AddAsync(Category category,CancellationToken cancellationToken = default)
     {
-        _context.Categories.Add(category);
-        _context.SaveChanges();
+        await _context.Categories.AddAsync(category,cancellationToken);
+        await _context.SaveChangesAsync();
         return category;
     }
 
-    public bool Edit(int id, Category category)
+    public async Task<bool> EditAsync(int id, Category category, CancellationToken cancellationToken)
     {
-        Category? categoryInDb = _context.Categories.AsNoTracking().FirstOrDefault(c => c.Id == id);
+        Category? categoryInDb = _context.Categories.Find(id);
         if (categoryInDb == null) return false;
-        category.Id = id;
-        _context.Categories.Update(category);
-        _context.SaveChanges();
+        categoryInDb.Name = category.Name;
+        categoryInDb.Description = category.Description;
+        _context.SaveChangesAsync(cancellationToken);
         return true;
     }
 
-    public bool Remove(int id)
+    public async Task<bool> UpdateToggleAsync(int id, CancellationToken cancellationToken = default)
+    {
+        Category? categoryInDb = _context.Categories.Find(id);
+        if (categoryInDb == null) return false;
+        categoryInDb.Status = !categoryInDb.Status;
+        await _context.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
+    public async Task<bool> RemoveAsync(int id,CancellationToken cancellationToken = default)
     {
         Category? categoryInDb = _context.Categories.Find(id);
         if (categoryInDb == null) return false;
         _context.Categories.Remove(categoryInDb);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync(cancellationToken);
         return true;
     }
 }

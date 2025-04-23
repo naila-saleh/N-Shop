@@ -1,10 +1,13 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web.Resource;
 using N_Shop.API.Data;
+using N_Shop.API.Migrations;
+using N_Shop.API.Models;
 using N_Shop.API.Services;
 using Scalar.AspNetCore;
 
@@ -29,6 +32,12 @@ public class Program
         builder.Services.AddScoped<ICategoryService,CategoryService>();
         builder.Services.AddScoped<IBrandService,BrandService>();
         builder.Services.AddScoped<IProductService,ProductService>();
+        
+        builder.Services.AddIdentity<ApplicationUser,IdentityRole>(options =>
+        {
+            options.User.RequireUniqueEmail = true;
+            //options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        }).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
         
         var app = builder.Build();
 

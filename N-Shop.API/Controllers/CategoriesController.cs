@@ -1,4 +1,5 @@
 ﻿using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,21 +20,21 @@ public class CategoriesController(ICategoryService categoryService) : Controller
     [HttpGet("")]
     public IActionResult GetAll()
     {
-        var categories = categoryService.GetAll();
+        var categories = categoryService.GetAllAsync();
         return Ok(categories.Adapt<IEnumerable<CategoryResponse>>());
     }
 
     [HttpGet("{id}")]
     public IActionResult GetById([FromRoute]int id)
     {
-        var category = categoryService.Get(e=>e.Id == id);
+        var category = categoryService.GetAsync(e=>e.Id == id);
         return category == null ? NotFound() : Ok(category.Adapt<CategoryResponse>());
     }
 
     [HttpPost("")]
-    public IActionResult Create([FromBody] CategoryRequest category)
+    public IActionResult Create([FromBody] CategoryRequest category,CancellationToken cancellationToken)
     {
-        var categoryInDb = categoryService.Add(category.Adapt<Category>());
+        var categoryInDb = categoryService.AddAsync(category.Adapt<Category>(), cancellationToken);
         //return Created($"{Request.Scheme}://{Request.Host}/api/Categories/{category.Id}",category);
         return CreatedAtAction(nameof(GetById), new { categoryInDb.Id }, categoryInDb.Adapt<CategoryResponse>());
     }
@@ -41,15 +42,16 @@ public class CategoriesController(ICategoryService categoryService) : Controller
     [HttpPut("{id}")]
     public IActionResult Update([FromRoute]int id,[FromBody] CategoryRequest category)
     {
-        var categoryToUpdate = categoryService.Edit(id,category.Adapt<Category>());
-        return !categoryToUpdate? NotFound(): NoContent();
+        var categoryToUpdate = categoryService.EditAsync(id,category.Adapt<Category>());
+        if (categoryToUpdate == null) return NotFound();
+        return NoContent();
     }
 
     [HttpDelete("{id}")]
     public IActionResult Delete([FromRoute] int id)
     {
-        var categoryToDelete = categoryService.Remove(id);
-        if (!categoryToDelete) return NotFound();
+        var categoryToDelete = categoryService.RemoveAsync(id);
+        if (categoryToDelete == null) return NotFound();
         return NoContent();
     }
 }

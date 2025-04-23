@@ -12,8 +12,8 @@ using N_Shop.API.Data;
 namespace N_Shop.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250407184030_identity")]
-    partial class identity
+    [Migration("20250410155606_Identity")]
+    partial class Identity
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -167,7 +167,6 @@ namespace N_Shop.API.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("City")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ConcurrencyStamp")
@@ -222,11 +221,9 @@ namespace N_Shop.API.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("State")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Street")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("TwoFactorEnabled")
