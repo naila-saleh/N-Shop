@@ -14,37 +14,37 @@ public class BrandsController(IBrandService brandService) : ControllerBase
     private readonly IBrandService _brandService=brandService;
 
     [HttpGet("")]
-    public IActionResult GetAll()
+    public async Task<IActionResult> GetAll()
     {
-        var brands = _brandService.GetAll();
+        var brands = await _brandService.GetAsync();
         return Ok(brands.Adapt<IEnumerable<BrandResponse>>());
     }
 
     [HttpGet("{id}")]
-    public IActionResult GetById([FromRoute] int id)
+    public async Task<IActionResult> GetById([FromRoute] int id)
     {
-        var brand=_brandService.Get(b=>b.Id==id);
+        var brand= await _brandService.GetOneAsync(b=>b.Id==id);
         return brand == null ? NotFound() : Ok(brand.Adapt<BrandResponse>());
     }
 
     [HttpPost("")]
-    public IActionResult Create([FromBody] BrandRequest brand)
+    public async Task<IActionResult> Create([FromBody] BrandRequest brand,CancellationToken cancellationToken = default)
     {
-        var brandToCreate = _brandService.Add(brand.Adapt<Brand>());
+        var brandToCreate = await _brandService.AddAsync(brand.Adapt<Brand>(),cancellationToken);
         return CreatedAtAction(nameof(GetById), new { brandToCreate.Id }, brandToCreate.Adapt<BrandResponse>());
     }
 
     [HttpPut("{id}")]
-    public IActionResult Update([FromRoute] int id, [FromBody] BrandRequest brand)
+    public async Task<IActionResult> Update([FromRoute] int id, [FromBody] BrandRequest brand,CancellationToken cancellationToken = default)
     {
-        var brandToUpdate = _brandService.Edit(id, brand.Adapt<Brand>());
+        var brandToUpdate = await _brandService.EditAsync(id, brand.Adapt<Brand>(),cancellationToken);
         return (!brandToUpdate)? NotFound() : NoContent();
     }
 
     [HttpDelete("{id}")]
-    public IActionResult Delete([FromRoute] int id)
+    public async Task<IActionResult> Delete([FromRoute] int id,CancellationToken cancellationToken = default)
     {
-        var brandToDelete = _brandService.Remove(id);
+        var brandToDelete = await _brandService.RemoveAsync(id,cancellationToken);
         if(!brandToDelete) return NotFound();
         return NoContent();
     }

@@ -6,9 +6,9 @@ namespace N_Shop.API.Services;
 
 public interface IProductService
 {
-    IEnumerable<Product> GetAll(string? query, int page = 1, int limit = 10);
-    Product? Get(Expression<Func<Product, bool>> expression);
-    Product Add(ProductRequest product);
-    bool Edit(int id,ProductUpdateRequest product);
-    bool Remove(int id);
+    IEnumerable<Product> GetAsync(string? query, int page = 1, int limit = 10);
+    Product? GetOneAsync(Expression<Func<Product, bool>> expression);
+    Product AddAsync(ProductRequest product);
+    bool EditAsync(int id,ProductUpdateRequest product);
+    bool RemoveAsync(int id);
 }

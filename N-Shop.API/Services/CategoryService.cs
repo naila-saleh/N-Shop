@@ -2,35 +2,19 @@
 using Microsoft.EntityFrameworkCore;
 using N_Shop.API.Data;
 using N_Shop.API.Models;
+using N_Shop.API.Services.IService;
 
 namespace N_Shop.API.Services;
 
-public class CategoryService:ICategoryService
+public class CategoryService: Service<Category>,ICategoryService
 {
     ApplicationDbContext _context;
 
-    public CategoryService(ApplicationDbContext context)
+    public CategoryService(ApplicationDbContext context):base(context)
     {
         _context = context;
     }
     
-    public IEnumerable<Category> GetAllAsync()
-    {
-        return _context.Categories.ToList();
-    }
-
-    public Category? GetAsync(Expression<Func<Category, bool>> expression)
-    {
-        return _context.Categories.FirstOrDefault(expression);
-    }
-
-    public async Task<Category> AddAsync(Category category,CancellationToken cancellationToken = default)
-    {
-        await _context.Categories.AddAsync(category,cancellationToken);
-        await _context.SaveChangesAsync();
-        return category;
-    }
-
     public async Task<bool> EditAsync(int id, Category category, CancellationToken cancellationToken)
     {
         Category? categoryInDb = _context.Categories.Find(id);
@@ -46,15 +30,6 @@ public class CategoryService:ICategoryService
         Category? categoryInDb = _context.Categories.Find(id);
         if (categoryInDb == null) return false;
         categoryInDb.Status = !categoryInDb.Status;
-        await _context.SaveChangesAsync(cancellationToken);
-        return true;
-    }
-
-    public async Task<bool> RemoveAsync(int id,CancellationToken cancellationToken = default)
-    {
-        Category? categoryInDb = _context.Categories.Find(id);
-        if (categoryInDb == null) return false;
-        _context.Categories.Remove(categoryInDb);
         await _context.SaveChangesAsync(cancellationToken);
         return true;
     }

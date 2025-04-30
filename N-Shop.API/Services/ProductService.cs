@@ -11,7 +11,7 @@ namespace N_Shop.API.Services;
 public class ProductService(ApplicationDbContext context):IProductService
 {
     private readonly ApplicationDbContext _context=context;
-    public IEnumerable<Product> GetAll(string? query, int page = 1, int limit = 10)
+    public IEnumerable<Product> GetAsync(string? query, int page = 1, int limit = 10)
     {
         IQueryable<Product> products=_context.Products;
         if (query != null)
@@ -25,12 +25,12 @@ public class ProductService(ApplicationDbContext context):IProductService
         return products.ToList();
     }
 
-    public Product? Get(Expression<Func<Product, bool>> expression)
+    public Product? GetOneAsync(Expression<Func<Product, bool>> expression)
     {
         return _context.Products.FirstOrDefault(expression);
     }
 
-    public Product Add(ProductRequest product)
+    public Product AddAsync(ProductRequest product)
     {
         var file = product.Image;
         var productInDb = product.Adapt<Product>();
@@ -49,7 +49,7 @@ public class ProductService(ApplicationDbContext context):IProductService
         return productInDb;
     }
 
-    public bool Edit(int id, ProductUpdateRequest productRequest)
+    public bool EditAsync(int id, ProductUpdateRequest productRequest)
     {
         var productInDb = _context.Products.AsNoTracking().FirstOrDefault(x => x.Id == id);
         if (productInDb == null) return false;
@@ -80,7 +80,7 @@ public class ProductService(ApplicationDbContext context):IProductService
         return true;
     }
 
-    public bool Remove(int id)
+    public bool RemoveAsync(int id)
     {
         var productInDb = _context.Products.Find(id);
         if (productInDb == null) return false;

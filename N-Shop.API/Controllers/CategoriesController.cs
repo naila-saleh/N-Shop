@@ -18,39 +18,39 @@ public class CategoriesController(ICategoryService categoryService) : Controller
     private readonly ICategoryService categoryService=categoryService;
     
     [HttpGet("")]
-    public IActionResult GetAll()
+    public async Task<IActionResult> GetAll()
     {
-        var categories = categoryService.GetAllAsync();
+        var categories = await categoryService.GetAsync();
         return Ok(categories.Adapt<IEnumerable<CategoryResponse>>());
     }
 
     [HttpGet("{id}")]
-    public IActionResult GetById([FromRoute]int id)
+    public async Task<IActionResult> GetById([FromRoute]int id)
     {
-        var category = categoryService.GetAsync(e=>e.Id == id);
+        var category = await categoryService.GetOneAsync(e=>e.Id == id);
         return category == null ? NotFound() : Ok(category.Adapt<CategoryResponse>());
     }
 
     [HttpPost("")]
-    public IActionResult Create([FromBody] CategoryRequest category,CancellationToken cancellationToken)
+    public async Task<IActionResult> Create([FromBody] CategoryRequest category,CancellationToken cancellationToken)
     {
-        var categoryInDb = categoryService.AddAsync(category.Adapt<Category>(), cancellationToken);
+        var categoryInDb = await categoryService.AddAsync(category.Adapt<Category>(), cancellationToken);
         //return Created($"{Request.Scheme}://{Request.Host}/api/Categories/{category.Id}",category);
         return CreatedAtAction(nameof(GetById), new { categoryInDb.Id }, categoryInDb.Adapt<CategoryResponse>());
     }
 
     [HttpPut("{id}")]
-    public IActionResult Update([FromRoute]int id,[FromBody] CategoryRequest category)
+    public async Task<IActionResult> Update([FromRoute]int id,[FromBody] CategoryRequest category,CancellationToken cancellationToken)
     {
-        var categoryToUpdate = categoryService.EditAsync(id,category.Adapt<Category>());
+        var categoryToUpdate = await categoryService.EditAsync(id,category.Adapt<Category>(),cancellationToken);
         if (categoryToUpdate == null) return NotFound();
         return NoContent();
     }
 
     [HttpDelete("{id}")]
-    public IActionResult Delete([FromRoute] int id)
+    public async Task<IActionResult> Delete([FromRoute] int id,CancellationToken cancellationToken)
     {
-        var categoryToDelete = categoryService.RemoveAsync(id);
+        var categoryToDelete = await categoryService.RemoveAsync(id,cancellationToken);
         if (categoryToDelete == null) return NotFound();
         return NoContent();
     }

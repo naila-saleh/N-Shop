@@ -16,21 +16,21 @@ public class ProductsController (IProductService productService): ControllerBase
     [HttpGet("")]
     public IActionResult GetAll([FromQuery] string? query,[FromQuery] int page=1,[FromQuery] int limit=10)
     {
-        var products = _productService.GetAll(query,page,limit);
+        var products = _productService.GetAsync(query,page,limit);
         return Ok(products.Adapt<IEnumerable<ProductResponse>>());
     }
 
     [HttpGet("{id}")]
     public IActionResult GetById([FromRoute]int id)
     {
-        var product = _productService.Get(x=>x.Id == id);
+        var product = _productService.GetOneAsync(x=>x.Id == id);
         return product == null? NotFound(): Ok(product.Adapt<ProductResponse>());
     }
 
     [HttpPost("")]
     public IActionResult Create([FromForm] ProductRequest product)
     {
-        var productInDb = _productService.Add(product);
+        var productInDb = _productService.AddAsync(product);
         if(productInDb == null)return BadRequest();
         return CreatedAtAction(nameof(GetById), new { id = productInDb.Id }, productInDb.Adapt<ProductResponse>());
     }
@@ -38,14 +38,14 @@ public class ProductsController (IProductService productService): ControllerBase
     [HttpPut("{id}")]
     public IActionResult Update([FromRoute] int id, [FromForm] ProductUpdateRequest product)
     {
-        var productInDb = _productService.Edit(id, product);
+        var productInDb = _productService.EditAsync(id, product);
         return !productInDb? NotFound(): NoContent();
     }
     
     [HttpDelete("{id}")]
     public IActionResult Delete([FromRoute] int id)
     {
-        var product = _productService.Remove(id);
+        var product = _productService.RemoveAsync(id);
         if (!product) return NotFound();
         return NoContent();
     }
