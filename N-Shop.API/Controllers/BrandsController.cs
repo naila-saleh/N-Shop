@@ -1,19 +1,23 @@
 ﻿using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using N_Shop.API.DTOs.Requests;
 using N_Shop.API.DTOs.Responses;
 using N_Shop.API.Models;
 using N_Shop.API.Services;
+using N_Shop.API.Utility;
 
 namespace N_Shop.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize(Roles = $"{StaticData.SuperAdmin},{StaticData.Admin},{StaticData.Company}")]
 public class BrandsController(IBrandService brandService) : ControllerBase
 {
     private readonly IBrandService _brandService=brandService;
 
     [HttpGet("")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll()
     {
         var brands = await _brandService.GetAsync();
@@ -21,6 +25,7 @@ public class BrandsController(IBrandService brandService) : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetById([FromRoute] int id)
     {
         var brand= await _brandService.GetOneAsync(b=>b.Id==id);

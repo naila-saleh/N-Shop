@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("N-Shop.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9220b6fb856975dafca567a8b5ebfd9c05e13e36")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9f72e8f03bcc65cd2e7534dc4ecc00dde002f1a3")]
 [assembly: System.Reflection.AssemblyProductAttribute("N-Shop.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("N-Shop.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

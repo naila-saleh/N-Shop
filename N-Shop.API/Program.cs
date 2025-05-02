@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Abstractions;
@@ -9,6 +10,8 @@ using N_Shop.API.Data;
 using N_Shop.API.Migrations;
 using N_Shop.API.Models;
 using N_Shop.API.Services;
+using N_Shop.API.Utility;
+using N_Shop.API.Utility.DBInitializer;
 using Scalar.AspNetCore;
 
 namespace N_Shop.API;
@@ -18,6 +21,15 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy(name: MyAllowSpecificOrigins,
+                policy =>
+                {
+                    policy.AllowAnyOrigin();
+                });
+        });
 
         // Add services to the container.
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -32,6 +44,9 @@ public class Program
         builder.Services.AddScoped<ICategoryService,CategoryService>();
         builder.Services.AddScoped<IBrandService,BrandService>();
         builder.Services.AddScoped<IProductService,ProductService>();
+        builder.Services.AddScoped<ICartService,CartService>();
+        builder.Services.AddTransient<IEmailSender, EmailSender>();
+        builder.Services.AddScoped<IDBInitializer,DBInitializer>();
         
         builder.Services.AddIdentity<ApplicationUser,IdentityRole>(options =>
         {
@@ -40,9 +55,14 @@ public class Program
         }).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
         
         var app = builder.Build();
+        app.UseCors(MyAllowSpecificOrigins);
+        
+        var scope = app.Services.CreateScope();
+        var service = scope.ServiceProvider.GetService<IDBInitializer>();
+        service.Initialize();
 
         // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
+        if (app.Environment.IsDevelopment()||app.Environment.IsProduction() )
         {
             app.MapOpenApi();
             app.MapScalarApiReference();

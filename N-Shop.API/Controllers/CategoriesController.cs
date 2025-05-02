@@ -8,16 +8,19 @@ using N_Shop.API.DTOs.Requests;
 using N_Shop.API.DTOs.Responses;
 using N_Shop.API.Models;
 using N_Shop.API.Services;
+using N_Shop.API.Utility;
 
 namespace N_Shop.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize(Roles = $"{StaticData.SuperAdmin},{StaticData.Admin},{StaticData.Company}")]
 public class CategoriesController(ICategoryService categoryService) : ControllerBase
 {
     private readonly ICategoryService categoryService=categoryService;
     
     [HttpGet("")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll()
     {
         var categories = await categoryService.GetAsync();
@@ -25,6 +28,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
     }
 
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetById([FromRoute]int id)
     {
         var category = await categoryService.GetOneAsync(e=>e.Id == id);

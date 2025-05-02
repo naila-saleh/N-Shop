@@ -1,9 +1,12 @@
 ﻿using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using N_Shop.API.DTOs.Requests;
 using N_Shop.API.Models;
+using N_Shop.API.Utility;
 
 namespace N_Shop.API.Controllers;
 
@@ -13,11 +16,16 @@ public class AccountController : ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly IEmailSender _emailSender;
+    private readonly RoleManager<IdentityRole> _roleManager;
 
-    public AccountController(UserManager<ApplicationUser> userManager,SignInManager<ApplicationUser> signInManager)
+    public AccountController(UserManager<ApplicationUser> userManager,SignInManager<ApplicationUser> signInManager,
+        IEmailSender emailSender,RoleManager<IdentityRole> roleManager)
     {
         this._userManager = userManager;
         this._signInManager = signInManager;
+        this._emailSender = emailSender;
+        this._roleManager = roleManager;
     }
     
     [HttpPost("register")]
@@ -25,7 +33,11 @@ public class AccountController : ControllerBase
     {
         var applicationUser= registerRequest.Adapt<ApplicationUser>();
         var result = await _userManager.CreateAsync(applicationUser, registerRequest.Password);
-        if (result.Succeeded){
+        if (result.Succeeded)
+        {
+            await _emailSender.SendEmailAsync(applicationUser.Email, "Welcome to N-Shop",
+                $"<h1>Hello {applicationUser.UserName}, thank you for registering with us.</h1>");
+            await _userManager.AddToRoleAsync(applicationUser,StaticData.Customer);
             await _signInManager.SignInAsync(applicationUser, false);
             return NoContent();
         }
@@ -50,6 +62,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpGet("logout")]
+    [Authorize]
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();
@@ -63,7 +76,8 @@ public class AccountController : ControllerBase
         var applicationUser = await _userManager.GetUserAsync(User);
         if (applicationUser != null)
         {
-            var result = await _userManager.ChangePasswordAsync(applicationUser, changePasswordRequest.OldPassword, changePasswordRequest.NewPassword);
+            var result = await _userManager.ChangePasswordAsync(applicationUser, changePasswordRequest.OldPassword,
+                changePasswordRequest.NewPassword);
             if (result.Succeeded) return NoContent();
             else return BadRequest(result.Errors);
         }
