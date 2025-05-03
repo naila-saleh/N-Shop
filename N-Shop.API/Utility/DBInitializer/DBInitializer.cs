@@ -27,23 +27,25 @@ public class DBInitializer:IDBInitializer
         {
             Console.WriteLine(e.Message);
         }
-        if (_roleManager is null||!_roleManager.Roles.Any())
+
+        if (!_roleManager.Roles.Any())
         {
-            await _roleManager.CreateAsync(new IdentityRole(StaticData.SuperAdmin));
-            await _roleManager.CreateAsync(new IdentityRole(StaticData.Admin));
-            await _roleManager.CreateAsync(new IdentityRole(StaticData.Customer));
-            await _roleManager.CreateAsync(new IdentityRole(StaticData.Company));
-            await _userManager.CreateAsync(new ()
+            await _roleManager.CreateAsync(new(StaticData.SuperAdmin));
+            await _roleManager.CreateAsync(new(StaticData.Admin));
+            await _roleManager.CreateAsync(new(StaticData.Customer));
+            await _roleManager.CreateAsync(new(StaticData.Company));
+            await _userManager.CreateAsync(new()
             {
-                FirstName = "Super",
-                LastName = "Admin",
-                UserName = "SuperAdmin",
+                FirstName = "super",
+                LastName = "admin",
+                UserName = "super_admin",
                 Gender = ApplicationUserGender.Female,
-                DateOfBirth = new DateTime(2004,5,19),
+                DateOfBirth = new DateTime(2004,05,19),
                 Email = "nailasaleh2004@gmail.com"
-            }, "naila05");
+            },"Naila@05");
             var user = await _userManager.FindByEmailAsync("nailasaleh2004@gmail.com");
-            await _userManager.AddToRoleAsync(user, StaticData.SuperAdmin);
+            await _userManager.AddToRoleAsync(user,StaticData.SuperAdmin);
         }
+
     }
 }

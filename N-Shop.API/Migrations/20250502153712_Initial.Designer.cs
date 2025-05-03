@@ -12,7 +12,7 @@ using N_Shop.API.Data;
 namespace N_Shop.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250502124512_Initial")]
+    [Migration("20250502153712_Initial")]
     partial class Initial
     {
         /// <inheritdoc />

@@ -46,7 +46,7 @@ public class Program
         builder.Services.AddScoped<IProductService,ProductService>();
         builder.Services.AddScoped<ICartService,CartService>();
         builder.Services.AddTransient<IEmailSender, EmailSender>();
-        builder.Services.AddScoped<IDBInitializer,DBInitializer>();
+        builder.Services.AddScoped<IUserService,UserService>();
         
         builder.Services.AddIdentity<ApplicationUser,IdentityRole>(options =>
         {
@@ -54,12 +54,14 @@ public class Program
             //options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         }).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
         
+        builder.Services.AddScoped<IDBInitializer,DBInitializer>();
+        
         var app = builder.Build();
         app.UseCors(MyAllowSpecificOrigins);
-        
+
         var scope = app.Services.CreateScope();
-        var service = scope.ServiceProvider.GetService<IDBInitializer>();
-        service.Initialize();
+        var dbInitializer = scope.ServiceProvider.GetRequiredService<IDBInitializer>();
+        dbInitializer.Initialize();
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment()||app.Environment.IsProduction() )
