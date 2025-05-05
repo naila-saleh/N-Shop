@@ -41,4 +41,11 @@ public class UsersController : ControllerBase
         var result = await _userService.ChangeRole(userId,roleName);
         return result ? Ok(result) : BadRequest();
     }
+
+    [HttpPatch("LockUnlock/{userId}")]
+    public async Task<IActionResult> LockUnlock([FromRoute] string userId)
+    {
+        var result = await _userService.LockUnlock(userId);
+        return result is not null? Ok(result) : BadRequest();
+    }
 }

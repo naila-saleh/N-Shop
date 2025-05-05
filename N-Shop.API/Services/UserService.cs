@@ -29,4 +29,22 @@ public class UserService:Service<ApplicationUser>,IUserService
         }
         return false;
     }
+    public async Task<bool?> LockUnlock(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)return null;
+        var isLockedNow = user.LockoutEnabled && user.LockoutEnd > DateTime.Now ;
+        if (isLockedNow)
+        {
+            user.LockoutEnabled = false;
+            user.LockoutEnd = null;
+        }
+        else
+        {
+            user.LockoutEnabled = true;
+            user.LockoutEnd = DateTime.Now.AddMinutes(60);
+        }
+        await _userManager.UpdateAsync(user);
+        return !isLockedNow;
+    }
 }

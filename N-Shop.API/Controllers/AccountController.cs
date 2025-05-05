@@ -1,9 +1,13 @@
-﻿using Mapster;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.IdentityModel.Tokens;
 using N_Shop.API.DTOs.Requests;
 using N_Shop.API.Models;
 using N_Shop.API.Utility;
@@ -35,11 +39,29 @@ public class AccountController : ControllerBase
         var result = await _userManager.CreateAsync(applicationUser, registerRequest.Password);
         if (result.Succeeded)
         {
-            await _emailSender.SendEmailAsync(applicationUser.Email, "Welcome to N-Shop",
-                $"<h1>Hello {applicationUser.UserName}, thank you for registering with us.</h1>");
             await _userManager.AddToRoleAsync(applicationUser,StaticData.Customer);
-            await _signInManager.SignInAsync(applicationUser, false);
+            //cookies
+            //await _signInManager.SignInAsync(applicationUser, false);
+            //token
+            var token =await _userManager.GenerateEmailConfirmationTokenAsync(applicationUser);
+            var emailConfirmUrl = Url.Action(nameof(ConfirmEmail), "Account", new { userId = applicationUser.Id, token }, Request.Scheme, Request.Host.Value);
+            await _emailSender.SendEmailAsync(applicationUser.Email, "Confirm Email for N-Shop",
+                $"<h1>Hello {applicationUser.UserName}, thank you for registering with us.</h1>"+
+                $"<a href='{emailConfirmUrl}'>click here</a>");
             return NoContent();
+        }
+        return BadRequest(result.Errors);
+    }
+
+    [HttpGet("ConfirmEmail")]
+    public async Task<IActionResult> ConfirmEmail(string userId, string token)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null) return NotFound();
+        var result = await _userManager.ConfirmEmailAsync(user, token);
+        if (result.Succeeded)
+        {
+            return Ok(new { message = "Email confirmed successfully" });
         }
         return BadRequest(result.Errors);
     }
@@ -50,11 +72,42 @@ public class AccountController : ControllerBase
         var applicationUser = await _userManager.FindByEmailAsync(loginRequest.Email);
         if (applicationUser != null)
         {
-            var result = await _userManager.CheckPasswordAsync(applicationUser, loginRequest.Password);
-            if (result)
+            var result = await _signInManager.PasswordSignInAsync(applicationUser, loginRequest.Password, loginRequest.RememberMe, false);
+            List<Claim> claims=new();
+            claims.Add(new Claim(ClaimTypes.Name,applicationUser.UserName));
+            var userRoles = await _userManager.GetRolesAsync(applicationUser);
+            if (userRoles.Count > 0)
             {
-                await _signInManager.SignInAsync(applicationUser, loginRequest.RememberMe);
-                return NoContent();
+                foreach (var role in userRoles)
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+                }
+            }
+            if (result.Succeeded)
+            {
+                //cookies
+                //await _signInManager.SignInAsync(applicationUser, loginRequest.RememberMe);  
+                
+                //token
+                SymmetricSecurityKey symmetricSecurityKey=new SymmetricSecurityKey(Encoding.UTF8.GetBytes("9itzSNVJRJHesEX6mevgGCjltu79tbCj"));
+                SigningCredentials signingCredentials=new SigningCredentials(symmetricSecurityKey,SecurityAlgorithms.HmacSha256);
+                var jwtToken= new JwtSecurityToken(
+                    claims:claims,
+                    expires:DateTime.Now.AddDays(30),
+                    signingCredentials:signingCredentials
+                    );
+                string token=new JwtSecurityTokenHandler().WriteToken(jwtToken);
+                return Ok(new{token});
+            }
+            else
+            {
+                if (result.IsLockedOut)
+                {
+                    return BadRequest(new { message = "Your account is locked out, please try again later" });
+                }else if (result.IsNotAllowed)
+                {
+                    return BadRequest(new { message = "Confirm your email before logging in" });
+                }
             }
         }
 

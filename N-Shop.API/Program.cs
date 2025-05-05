@@ -1,3 +1,4 @@
+using System.Text;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -6,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web.Resource;
+using Microsoft.IdentityModel.Tokens;
 using N_Shop.API.Data;
 using N_Shop.API.Migrations;
 using N_Shop.API.Models;
@@ -32,9 +34,9 @@ public class Program
         });
 
         // Add services to the container.
-        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAdB2C"));
-
+       // builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+       //     .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAdB2C"));
+       
         builder.Services.AddControllers();
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
@@ -51,10 +53,27 @@ public class Program
         builder.Services.AddIdentity<ApplicationUser,IdentityRole>(options =>
         {
             options.User.RequireUniqueEmail = true;
-            //options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            options.SignIn.RequireConfirmedEmail = true;
         }).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
         
         builder.Services.AddScoped<IDBInitializer,DBInitializer>();
+        
+        builder.Services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        }).AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new()
+            {
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("9itzSNVJRJHesEX6mevgGCjltu79tbCj"))
+            };
+        });
+
         
         var app = builder.Build();
         app.UseCors(MyAllowSpecificOrigins);
