@@ -1,0 +1,11 @@
+# Ignore build output
+bin/
+obj/
+
+# Ignore local settings
+*.user
+*.suo
+
+# Ignore JSON config files if they contain secrets (optional)
+appsettings.Development.json
+appsettings.Local.json
